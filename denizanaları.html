@@ -1,0 +1,1909 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TÜBİTAK Biyoloji Projesi | Denizanalarının Kalpsiz ve Beyinsiz Yaşamı</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter ve Space Grotesk -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <!-- Three.js Import Map -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                    },
+                    colors: {
+                        abyss: '#040b16',
+                        deepOcean: '#081529',
+                        marineCard: '#0d213f',
+                        biolumCyan: '#00f2fe',
+                        biolumTeal: '#06b6d4',
+                        biolumBlue: '#38bdf8',
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'tentacle-sway': 'sway 5s ease-in-out infinite alternate',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-18px)' },
+                        },
+                        sway: {
+                            '0%': { transform: 'rotate(-3deg)' },
+                            '100%': { transform: 'rotate(3deg)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #040b16;
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(circle at 15% 20%, rgba(0, 242, 254, 0.06) 0%, transparent 40%),
+                radial-gradient(circle at 85% 60%, rgba(56, 189, 248, 0.07) 0%, transparent 45%);
+        }
+
+        .glow-cyan {
+            box-shadow: 0 0 25px rgba(0, 242, 254, 0.25);
+        }
+        .text-glow {
+            text-shadow: 0 0 20px rgba(0, 242, 254, 0.5);
+        }
+
+        .glass-panel {
+            background: rgba(13, 33, 63, 0.68);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(56, 189, 248, 0.18);
+        }
+
+        @keyframes pingRing {
+            0% { transform: scale(0.95); opacity: 0.9; }
+            70% { transform: scale(1.8); opacity: 0; }
+            100% { transform: scale(1.8); opacity: 0; }
+        }
+        .hotspot-ring {
+            animation: pingRing 2.2s cubic-bezier(0, 0, 0.2, 1) infinite;
+            transform-origin: center;
+        }
+
+        @keyframes tabFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .tab-panel {
+            animation: tabFadeIn 0.28s ease-out;
+        }
+
+        .anatomy-pin-3d {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            cursor: pointer;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+        .anatomy-pin-3d:hover {
+            transform: translate(-50%, -50%) scale(1.15);
+        }
+        .anatomy-pin-3d.active .pin-dot-3d {
+            transform: scale(1.35);
+            box-shadow: 0 0 0 6px rgba(56, 189, 248, 0.35), 0 0 18px #38bdf8;
+        }
+
+        #nematocyst-canvas {
+            cursor: grab;
+        }
+        #nematocyst-canvas:active {
+            cursor: grabbing;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-biolumCyan selection:text-abyss overflow-x-hidden">
+
+    <!-- 1. ÜST MENÜ (SEKME NAVİGASYONU) -->
+    <header class="fixed top-0 left-0 right-0 z-50 glass-panel border-b border-sky-400/15">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 md:h-20">
+                <button type="button" data-tab-target="giris" class="tab-trigger flex items-center space-x-3 group text-left">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg group-hover:scale-105 transition">
+                        <svg class="w-5 h-5 text-abyss" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C7.58 2 4 5.58 4 10c0 2.03.76 3.87 2 5.28V20a1 1 0 001 1h1a1 1 0 001-1v-3h2v4a1 1 0 001 1h1a1 1 0 001-1v-4h2v3a1 1 0 001 1h1a1 1 0 001-1v-4.72c1.24-1.41 2-3.25 2-5.28 0-4.42-3.58-8-8-8z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <span class="font-display font-bold text-white tracking-wide text-sm sm:text-base block">CNIDARIA LAB</span>
+                        <span class="text-[11px] text-cyan-300/80 uppercase tracking-widest block">TÜBİTAK 2204-A Biyoloji</span>
+                    </div>
+                </button>
+
+                <!-- Masaüstü Sekme Butonları -->
+                <nav class="hidden xl:flex items-center space-x-1 text-sm font-medium text-slate-300">
+                    <button type="button" data-tab-target="giris" class="tab-trigger nav-tab px-3 py-2 rounded-xl transition">Giriş</button>
+                    <button type="button" data-tab-target="ozet" class="tab-trigger nav-tab px-3 py-2 rounded-xl transition">Proje Özeti</button>
+                    <button type="button" data-tab-target="anatomi" class="tab-trigger nav-tab px-3 py-2 rounded-xl transition">2D Anatomi</button>
+                    <button type="button" data-tab-target="anatomi3d" class="tab-trigger nav-tab px-3 py-2 rounded-xl transition">3D Keşif</button>
+                    <button type="button" data-tab-target="nematosist" class="tab-trigger nav-tab px-3 py-2 rounded-xl transition">Nematosist (3D)</button>
+                    <button type="button" data-tab-target="sistemler" class="tab-trigger nav-tab px-3 py-2 rounded-xl transition">Fizyoloji</button>
+                    <button type="button" data-tab-target="simulasyon" class="tab-trigger nav-tab px-3 py-2 rounded-xl transition">Sinir Ağı</button>
+                    <button type="button" data-tab-target="kunye" class="tab-trigger nav-tab px-3 py-2 rounded-xl transition">Künye & Kaynakça</button>
+                </nav>
+
+                <!-- Mobil / Tablet Menü Butonu -->
+                <button id="mobile-menu-btn" type="button" aria-label="Menüyü Aç" aria-expanded="false" class="xl:hidden p-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobil / Tablet Açılır Sekme Menüsü -->
+        <div id="mobile-menu" class="hidden xl:hidden bg-deepOcean/95 border-b border-sky-400/20 px-4 pt-2 pb-5 space-y-1.5">
+            <button type="button" data-tab-target="giris" class="tab-trigger nav-tab mobile-nav-link w-full text-left block px-3 py-2.5 rounded-lg text-slate-200">Giriş</button>
+            <button type="button" data-tab-target="ozet" class="tab-trigger nav-tab mobile-nav-link w-full text-left block px-3 py-2.5 rounded-lg text-slate-200">Proje Özeti</button>
+            <button type="button" data-tab-target="anatomi" class="tab-trigger nav-tab mobile-nav-link w-full text-left block px-3 py-2.5 rounded-lg text-slate-200">2D Anatomi</button>
+            <button type="button" data-tab-target="anatomi3d" class="tab-trigger nav-tab mobile-nav-link w-full text-left block px-3 py-2.5 rounded-lg text-slate-200">3D Ay Denizanası Keşfi</button>
+            <button type="button" data-tab-target="nematosist" class="tab-trigger nav-tab mobile-nav-link w-full text-left block px-3 py-2.5 rounded-lg text-slate-200">3D Nematosist Simülasyonu</button>
+            <button type="button" data-tab-target="sistemler" class="tab-trigger nav-tab mobile-nav-link w-full text-left block px-3 py-2.5 rounded-lg text-slate-200">Fizyolojik Mekanizmalar</button>
+            <button type="button" data-tab-target="simulasyon" class="tab-trigger nav-tab mobile-nav-link w-full text-left block px-3 py-2.5 rounded-lg text-slate-200">Sinir Ağı Simülasyonu</button>
+            <button type="button" data-tab-target="kunye" class="tab-trigger nav-tab mobile-nav-link w-full text-left block px-3 py-2.5 rounded-lg text-slate-200">Proje Künyesi & Kaynakça</button>
+        </div>
+    </header>
+
+    <!-- ANA İÇERİK ALANI (SEKMELER) -->
+    <main class="flex-1 pt-20 md:pt-24 pb-12">
+
+        <!-- SEKME 1: GİRİŞ (HERO) -->
+        <section id="tab-giris" class="tab-panel relative py-10 md:py-16 overflow-hidden">
+            <div class="absolute top-16 left-10 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute bottom-10 right-10 w-80 h-80 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                    <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+                        <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-cyan-950/80 border border-cyan-400/30 text-cyan-300 text-xs sm:text-sm font-medium">
+                            <span class="w-2 h-2 rounded-full bg-biolumCyan animate-ping"></span>
+                            <span>TÜBİTAK Lise Öğrencileri Araştırma Projeleri</span>
+                        </div>
+
+                        <h1 class="font-display text-3xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight">
+                            Denizanaları <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-biolumCyan to-blue-400 text-glow">Kalp ve Beyine</span> Sahip Olmadan Nasıl Yaşamlarını Sürdürür?
+                        </h1>
+
+                        <p class="text-slate-300 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto lg:mx-0">
+                            500 milyon yılı aşkın süredir okyanuslarda varlığını sürdüren <em class="text-cyan-200">Cnidaria</em> (Knidliler) şubesinin en gizemli üyeleri olan denizanalarının; merkezi bir sinir sistemi, kan dolaşımı ve solunum organları olmaksızın gerçekleştirdikleri biyofiziksel ve hücresel adaptasyonların incelenmesi.
+                        </p>
+
+                        <div class="glass-panel rounded-2xl p-4 sm:p-5 border-l-4 border-l-biolumCyan text-left max-w-2xl mx-auto lg:mx-0">
+                            <span class="text-xs uppercase tracking-wider text-cyan-400 font-semibold block mb-1">Temel Araştırma Sorusu</span>
+                            <p class="text-sm sm:text-base text-slate-100 font-medium">
+                                "Kompleks organ sistemlerinden yoksun bir organizma, hücresel difüzyon ve merkeziyetsiz sinir ağları (nerve net) aracılığıyla enerji homeostazını ve çevresel uyarılara koordineli tepkiyi nasıl sağlar?"
+                            </p>
+                        </div>
+
+                        <div class="flex flex-wrap items-center justify-center lg:justify-start gap-3 pt-2">
+                            <button type="button" data-tab-target="anatomi3d" class="tab-trigger px-6 py-3.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-abyss font-bold text-sm sm:text-base shadow-lg hover:shadow-cyan-400/30 hover:scale-[1.02] transition">
+                                3D Anatomiyi Keşfet
+                            </button>
+                            <button type="button" data-tab-target="nematosist" class="tab-trigger px-5 py-3.5 rounded-xl glass-panel text-cyan-200 font-semibold text-sm sm:text-base hover:bg-cyan-500/15 transition">
+                                Nematosist Simülasyonu
+                            </button>
+                            <button type="button" data-tab-target="simulasyon" class="tab-trigger px-5 py-3.5 rounded-xl bg-slate-800/75 border border-slate-700 text-slate-200 font-medium text-sm hover:bg-slate-700/80 transition">
+                                Sinir Ağı
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-5 flex justify-center">
+                        <div class="relative w-72 h-80 sm:w-96 sm:h-[420px] flex items-center justify-center animate-float">
+                            <div class="absolute inset-4 rounded-full bg-gradient-to-b from-cyan-400/20 to-blue-600/5 blur-2xl"></div>
+                            
+                            <svg viewBox="0 0 320 380" class="w-full h-full drop-shadow-[0_0_25px_rgba(0,242,254,0.35)]" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                    <radialGradient id="bellGrad" cx="50%" cy="30%" r="70%">
+                                        <stop offset="0%" stop-color="#00f2fe" stop-opacity="0.65"/>
+                                        <stop offset="55%" stop-color="#0284c7" stop-opacity="0.35"/>
+                                        <stop offset="100%" stop-color="#0f172a" stop-opacity="0.85"/>
+                                    </radialGradient>
+                                    <linearGradient id="tentacleGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.85"/>
+                                        <stop offset="100%" stop-color="#00f2fe" stop-opacity="0.05"/>
+                                    </linearGradient>
+                                </defs>
+
+                                <g class="animate-tentacle-sway" style="transform-origin: 160px 175px;">
+                                    <path d="M90 175 C75 230, 105 280, 85 350" stroke="url(#tentacleGrad)" stroke-width="3" stroke-linecap="round"/>
+                                    <path d="M115 180 C105 245, 130 295, 118 365" stroke="url(#tentacleGrad)" stroke-width="4" stroke-linecap="round"/>
+                                    <path d="M145 182 C140 250, 155 310, 145 372" stroke="url(#tentacleGrad)" stroke-width="3.5" stroke-linecap="round"/>
+                                    <path d="M175 182 C185 250, 165 310, 178 370" stroke="url(#tentacleGrad)" stroke-width="3.5" stroke-linecap="round"/>
+                                    <path d="M205 180 C215 240, 195 295, 210 360" stroke="url(#tentacleGrad)" stroke-width="4" stroke-linecap="round"/>
+                                    <path d="M230 175 C245 230, 215 280, 235 345" stroke="url(#tentacleGrad)" stroke-width="3" stroke-linecap="round"/>
+                                    
+                                    <path d="M135 178 Q120 225 140 265 T132 325" stroke="#67e8f9" stroke-opacity="0.45" stroke-width="7" stroke-linecap="round"/>
+                                    <path d="M185 178 Q200 225 180 265 T188 325" stroke="#67e8f9" stroke-opacity="0.45" stroke-width="7" stroke-linecap="round"/>
+                                </g>
+
+                                <path d="M55 165 C55 75, 105 35, 160 35 C215 35, 265 75, 265 165 C245 182, 215 172, 195 180 C175 188, 145 188, 125 180 C105 172, 75 182, 55 165 Z" 
+                                      fill="url(#bellGrad)" stroke="#38bdf8" stroke-width="2.5"/>
+
+                                <path d="M95 140 Q125 90 160 85 T225 140" stroke="#00f2fe" stroke-opacity="0.45" stroke-width="1.5" stroke-dasharray="4 4"/>
+                                <path d="M80 155 Q160 115 240 155" stroke="#00f2fe" stroke-opacity="0.4" stroke-width="1.5"/>
+                                
+                                <ellipse cx="135" cy="125" rx="18" ry="12" transform="rotate(-25 135 125)" stroke="#67e8f9" stroke-width="2" fill="#00f2fe" fill-opacity="0.15"/>
+                                <ellipse cx="185" cy="125" rx="18" ry="12" transform="rotate(25 185 125)" stroke="#67e8f9" stroke-width="2" fill="#00f2fe" fill-opacity="0.15"/>
+                                <circle cx="160" cy="100" r="6" fill="#00f2fe" fill-opacity="0.6"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEKME 2: PROJE ÖZETİ & HİPOTEZ -->
+        <section id="tab-ozet" class="tab-panel hidden py-8 md:py-14">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-3xl mx-auto mb-12">
+                    <span class="text-cyan-400 text-xs font-bold uppercase tracking-widest">Araştırma Çerçevesi</span>
+                    <h2 class="font-display text-2xl sm:text-4xl font-bold text-white mt-2">Proje Özeti ve Bilimsel Yaklaşım</h2>
+                    <p class="text-slate-400 mt-3 text-sm sm:text-base">
+                        Evrimsel süreçte organlaşma basamağından önce özelleşmiş doku düzeyinde kalan denizanalarının yaşamsal stratejilerini üç temel başlıkta ele alıyoruz.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+                    <div class="glass-panel rounded-2xl p-6 sm:p-8 hover:border-cyan-400/50 transition duration-300 flex flex-col justify-between">
+                        <div>
+                            <div class="w-12 h-12 rounded-xl bg-cyan-500/15 border border-cyan-400/30 flex items-center justify-center text-biolumCyan mb-5">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                            </div>
+                            <h3 class="font-display text-xl font-bold text-white mb-3">Projenin Amacı</h3>
+                            <p class="text-slate-300 text-sm leading-relaxed">
+                                Kalp, damar sistemi ve merkezi sinir sistemi (beyin) bulunmayan denizanalarının; gaz alışverişi, besin iletimi ve lokomotor (yüzme) hareketlerini nasıl koordine ettiğini biyofiziksel ilkelerle açıklamak ve lise biyoloji müfredatına etkileşimli bir model kazandırmaktır.
+                            </p>
+                        </div>
+                        <div class="mt-6 pt-4 border-t border-slate-700/60 text-xs text-cyan-300 font-medium">
+                            Odak Alanı: Karşılaştırmalı Hayvan Fizyolojisi
+                        </div>
+                    </div>
+
+                    <div class="glass-panel rounded-2xl p-6 sm:p-8 hover:border-cyan-400/50 transition duration-300 flex flex-col justify-between">
+                        <div>
+                            <div class="w-12 h-12 rounded-xl bg-sky-500/15 border border-sky-400/30 flex items-center justify-center text-sky-300 mb-5">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+                            </div>
+                            <h3 class="font-display text-xl font-bold text-white mb-3">Araştırma Yöntemi</h3>
+                            <p class="text-slate-300 text-sm leading-relaxed">
+                                Literatür taraması ile <em>Scyphozoa</em> sınıfından <em>Aurelia aurita</em> (Ay Denizanası) model organizmasının doku kalınlığı, mezoglea su oranı (%95+) ve sinir ağı iletim hızları analiz edilmiş; elde edilen veriler 2D/3D anatomik modeller ve uyarı-tepki simülasyonuna dönüştürülmüştür.
+                            </p>
+                        </div>
+                        <div class="mt-6 pt-4 border-t border-slate-700/60 text-xs text-sky-300 font-medium">
+                            Model Organizmalar: Aurelia aurita & Chrysaora
+                        </div>
+                    </div>
+
+                    <div class="glass-panel rounded-2xl p-6 sm:p-8 hover:border-cyan-400/50 transition duration-300 flex flex-col justify-between glow-cyan">
+                        <div>
+                            <div class="w-12 h-12 rounded-xl bg-teal-500/15 border border-teal-400/30 flex items-center justify-center text-teal-300 mb-5">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                            </div>
+                            <h3 class="font-display text-xl font-bold text-white mb-3">Temel Hipotez</h3>
+                            <p class="text-slate-300 text-sm leading-relaxed">
+                                Denizanalarının iki hücre tabakalı (diploblastik) ince vücut duvarı difüzyon mesafesini minimumda tutarak kalp ihtiyacını ortadan kaldırırken; çan kenarına dizili <strong>rhopalia</strong> duyu merkezleri ile çift katmanlı <strong>sinir ağı</strong>, merkezi bir beyin olmadan ritmik kas kasılmalarını yönetebilir.
+                            </p>
+                        </div>
+                        <div class="mt-6 pt-4 border-t border-slate-700/60 text-xs text-teal-300 font-medium">
+                            Sonuç: Düşük Enerji Maliyetiyle Yüksek Verimlilik
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEKME 3: İNTERAKTİF 2D DENİZANASI ANATOMİSİ -->
+        <section id="tab-anatomi" class="tab-panel hidden py-8 md:py-14">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-3xl mx-auto mb-10">
+                    <span class="text-cyan-400 text-xs font-bold uppercase tracking-widest">Yapısal İnceleme • 2D Kesit</span>
+                    <h2 class="font-display text-2xl sm:text-4xl font-bold text-white mt-2">İnteraktif Denizanası Anatomisi</h2>
+                    <p class="text-slate-400 mt-3 text-sm sm:text-base">
+                        Şema üzerindeki parlak noktalara veya aşağıdaki butonlara tıklayarak kalp ve beynin görevini üstlenen 4 temel yapıyı inceleyin.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                    <div class="lg:col-span-6 glass-panel rounded-3xl p-6 sm:p-8 flex flex-col items-center">
+                        <div class="w-full max-w-md aspect-square relative flex items-center justify-center">
+                            <svg viewBox="0 0 400 400" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M60 210 C60 95, 130 45, 200 45 C270 45, 340 95, 340 210 C310 230, 270 218, 240 228 C210 238, 190 238, 160 228 C130 218, 90 230, 60 210 Z" 
+                                      fill="#0c2647" stroke="#38bdf8" stroke-width="3"/>
+                                <path d="M78 202 C78 108, 138 64, 200 64 C262 64, 322 108, 322 202 C295 215, 260 205, 200 215 C140 205, 105 215, 78 202 Z" 
+                                      fill="#00f2fe" fill-opacity="0.14" stroke="#00f2fe" stroke-width="1.5" stroke-dasharray="5 5"/>
+                                <path d="M145 195 C145 140, 175 115, 200 115 C225 115, 255 140, 255 195 Z" 
+                                      fill="#0284c7" fill-opacity="0.45" stroke="#7dd3fc" stroke-width="2"/>
+                                <line x1="200" y1="115" x2="200" y2="64" stroke="#7dd3fc" stroke-width="2"/>
+                                <line x1="165" y1="135" x2="110" y2="105" stroke="#7dd3fc" stroke-width="2"/>
+                                <line x1="235" y1="135" x2="290" y2="105" stroke="#7dd3fc" stroke-width="2"/>
+
+                                <g stroke="#22d3ee" stroke-width="1.4" opacity="0.8">
+                                    <path d="M95 180 L130 155 L165 175 L200 150 L235 175 L270 155 L305 180" fill="none"/>
+                                    <path d="M110 135 L150 120 L185 135 L215 135 L250 120 L290 135" fill="none"/>
+                                    <line x1="130" y1="155" x2="150" y2="120"/>
+                                    <line x1="200" y1="150" x2="200" y2="115"/>
+                                    <line x1="270" y1="155" x2="250" y2="120"/>
+                                </g>
+
+                                <path d="M100 222 Q90 290 105 365" stroke="#38bdf8" stroke-width="3" fill="none" stroke-linecap="round"/>
+                                <path d="M155 230 Q145 300 160 375" stroke="#38bdf8" stroke-width="4" fill="none" stroke-linecap="round"/>
+                                <path d="M245 230 Q255 300 240 375" stroke="#38bdf8" stroke-width="4" fill="none" stroke-linecap="round"/>
+                                <path d="M300 222 Q310 290 295 365" stroke="#38bdf8" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+                                <g class="cursor-pointer anatomy-node" data-part="mezoglea">
+                                    <circle cx="130" cy="95" r="14" fill="#00f2fe" fill-opacity="0.3" class="hotspot-ring"/>
+                                    <circle cx="130" cy="95" r="9" fill="#00f2fe" stroke="#040b16" stroke-width="2.5"/>
+                                    <text x="130" y="99" text-anchor="middle" fill="#040b16" font-size="10" font-weight="bold">1</text>
+                                </g>
+
+                                <g class="cursor-pointer anatomy-node" data-part="difuzyon">
+                                    <circle cx="200" cy="160" r="14" fill="#38bdf8" fill-opacity="0.3" class="hotspot-ring"/>
+                                    <circle cx="200" cy="160" r="9" fill="#38bdf8" stroke="#040b16" stroke-width="2.5"/>
+                                    <text x="200" y="164" text-anchor="middle" fill="#040b16" font-size="10" font-weight="bold">2</text>
+                                </g>
+
+                                <g class="cursor-pointer anatomy-node" data-part="siniragi">
+                                    <circle cx="270" cy="155" r="14" fill="#2dd4bf" fill-opacity="0.3" class="hotspot-ring"/>
+                                    <circle cx="270" cy="155" r="9" fill="#2dd4bf" stroke="#040b16" stroke-width="2.5"/>
+                                    <text x="270" y="159" text-anchor="middle" fill="#040b16" font-size="10" font-weight="bold">3</text>
+                                </g>
+
+                                <g class="cursor-pointer anatomy-node" data-part="rhopalia">
+                                    <circle cx="315" cy="212" r="14" fill="#facc15" fill-opacity="0.35" class="hotspot-ring"/>
+                                    <circle cx="315" cy="212" r="9" fill="#facc15" stroke="#040b16" stroke-width="2.5"/>
+                                    <text x="315" y="216" text-anchor="middle" fill="#040b16" font-size="10" font-weight="bold">4</text>
+                                </g>
+                            </svg>
+                        </div>
+
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full mt-4">
+                            <button type="button" data-select-part="mezoglea" id="btn-mezoglea" class="anatomy-btn px-3 py-2 rounded-xl text-xs font-semibold bg-cyan-500 text-abyss transition">1. Mezoglea</button>
+                            <button type="button" data-select-part="difuzyon" id="btn-difuzyon" class="anatomy-btn px-3 py-2 rounded-xl text-xs font-semibold bg-slate-800/80 text-slate-300 hover:bg-slate-700 transition">2. Difüzyon</button>
+                            <button type="button" data-select-part="siniragi" id="btn-siniragi" class="anatomy-btn px-3 py-2 rounded-xl text-xs font-semibold bg-slate-800/80 text-slate-300 hover:bg-slate-700 transition">3. Sinir Ağı</button>
+                            <button type="button" data-select-part="rhopalia" id="btn-rhopalia" class="anatomy-btn px-3 py-2 rounded-xl text-xs font-semibold bg-slate-800/80 text-slate-300 hover:bg-slate-700 transition">4. Rhopalia</button>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-6">
+                        <div id="anatomy-detail-card" class="glass-panel rounded-3xl p-6 sm:p-10 border border-cyan-400/30 glow-cyan transition-all duration-300">
+                            <div class="flex items-center justify-between mb-4">
+                                <span id="anatomy-badge" class="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 text-xs font-bold uppercase tracking-wider">
+                                    Yapı 01 / 04 • Hücre Dışı Matriks
+                                </span>
+                                <span id="anatomy-organ-analog" class="text-xs text-slate-400 font-medium">
+                                    İskelet & Enerji Tasarrufu
+                                </span>
+                            </div>
+
+                            <h3 id="anatomy-title" class="font-display text-2xl sm:text-3xl font-bold text-white mb-4">
+                                Mezoglea Tabakası
+                            </h3>
+
+                            <p id="anatomy-desc" class="text-slate-300 text-sm sm:text-base leading-relaxed mb-6">
+                                Denizanasının dış deri tabakası (epidermis) ile iç sindirim tabakası (gastrodermis) arasında yer alan; %95 ila %98 oranında sudan, kolajen liflerinden ve elastik proteinlerden oluşan jelatinimsi yapıdır.
+                            </p>
+
+                            <div class="bg-abyss/60 rounded-2xl p-5 border border-sky-500/20 space-y-3">
+                                <h4 class="text-sm font-bold text-cyan-300 flex items-center space-x-2">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+                                    <span>Kalp ve Beyin Olmadan Nasıl İşlev Görür?</span>
+                                </h4>
+                                <p id="anatomy-mechanism" class="text-slate-300 text-xs sm:text-sm leading-relaxed">
+                                    Mezoglea canlı hücre yoğunluğu çok düşük olan bir tabaka olduğu için oksijen tüketimi neredeyse sıfırdır. Bu sayede organizmanın enerji ihtiyacı minimumda kalır ve kalp gibi yüksek enerji harcayan bir pompaya gerek duyulmaz. Ayrıca elastik yapısı kas kasılmasından sonra çanın eski formuna dönmesini sağlayan pasif bir yay gibi çalışır.
+                                </p>
+                            </div>
+
+                            <div class="mt-6 grid grid-cols-2 gap-4">
+                                <div class="p-3.5 rounded-xl bg-slate-900/70 border border-slate-800">
+                                    <span class="text-[11px] text-slate-400 block">Temel Fiziksel İlke</span>
+                                    <span id="anatomy-principle" class="text-sm font-semibold text-white mt-0.5 block">Elastik Geri Tepme & Düşük Metabolizma</span>
+                                </div>
+                                <div class="p-3.5 rounded-xl bg-slate-900/70 border border-slate-800">
+                                    <span class="text-[11px] text-slate-400 block">Su / Kuru Madde Oranı</span>
+                                    <span id="anatomy-metric" class="text-sm font-semibold text-biolumCyan mt-0.5 block">%96 Su / %4 Protein-Tuz</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEKME 4: 3D AY DENİZANASI ANATOMİSİ KEŞİF SİSTEMİ -->
+        <section id="tab-anatomi3d" class="tab-panel hidden py-8 md:py-14">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-3xl mx-auto mb-8">
+                    <span class="text-cyan-400 text-xs font-bold uppercase tracking-widest">Three.js & WebGL • 3D Model</span>
+                    <h2 class="font-display text-2xl sm:text-4xl font-bold text-white mt-2">3D Ay Denizanası Anatomisi Keşif Sistemi</h2>
+                    <p class="text-slate-400 mt-2 text-sm sm:text-base">
+                        <em>Aurelia aurita</em> modelini sürükleyerek döndürün, yakınlaştırın, katmanları ayırın ve numaralı pinlere tıklayarak anatomik yapıları inceleyin.
+                    </p>
+                </div>
+
+                <div class="glass-panel rounded-3xl p-4 sm:p-6 border border-cyan-400/30 glow-cyan">
+                    <div class="flex flex-wrap items-center justify-between gap-3 pb-4 mb-4 border-b border-slate-800/80">
+                        <div class="text-xs text-sky-200/80">
+                            <span class="inline-block w-2 h-2 rounded-full bg-cyan-400 mr-1.5"></span>
+                            Sürükle: Döndür • Tekerlek: Yakınlaştır • Pin: Yapı Seç
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button id="btn-3d-pulse" type="button" class="px-3 py-1.5 rounded-xl text-xs font-medium bg-sky-500/30 text-sky-200 border border-sky-400/40 hover:bg-sky-500/40 transition">
+                                Yüzme Ritmi: Açık
+                            </button>
+                            <button id="btn-3d-explode" type="button" class="px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-800/80 text-slate-300 border border-slate-700 hover:bg-slate-700 transition">
+                                Katmanları Ayır
+                            </button>
+                            <button id="btn-3d-reset" type="button" class="px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-800/80 text-slate-300 border border-slate-700 hover:bg-slate-700 transition">
+                                Görünümü Sıfırla
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                        <div class="lg:col-span-7 relative rounded-2xl overflow-hidden bg-abyss border border-slate-800 h-[380px] sm:h-[470px]">
+                            <div id="jelly-3d-canvas-container" class="w-full h-full"></div>
+                            <div id="jelly-3d-pins-layer" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
+                        </div>
+
+                        <div class="lg:col-span-5 flex flex-col justify-between gap-4">
+                            <div class="bg-abyss/60 rounded-2xl p-4 border border-slate-800/90">
+                                <div class="text-xs font-semibold uppercase tracking-wider text-sky-300/80 mb-2.5">
+                                    Anatomik Yapılar
+                                </div>
+                                <div id="jelly-3d-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1.5 max-h-48 overflow-y-auto pr-1"></div>
+                            </div>
+
+                            <div id="jelly-3d-detail-card" class="bg-abyss/75 rounded-2xl p-5 border border-sky-400/25 flex-1 flex flex-col justify-between">
+                                <div>
+                                    <div class="flex items-center justify-between gap-2 mb-2">
+                                        <span id="jelly-3d-badge" class="text-[11px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-400/30">
+                                            Genel Bakış
+                                        </span>
+                                        <button id="btn-3d-clear" type="button" class="hidden text-xs text-slate-400 hover:text-white transition">
+                                            Temizle ✕
+                                        </button>
+                                    </div>
+
+                                    <div class="flex items-center gap-2.5 mt-2">
+                                        <span id="jelly-3d-dot" class="w-3.5 h-3.5 rounded-full bg-cyan-400 shrink-0" style="box-shadow: 0 0 12px #22d3ee;"></span>
+                                        <div>
+                                            <h3 id="jelly-3d-title" class="font-display text-lg font-bold text-white leading-snug">Bir Yapı Seçin</h3>
+                                            <p id="jelly-3d-latin" class="text-xs italic text-sky-200/70">Aurelia aurita • Scyphozoa</p>
+                                        </div>
+                                    </div>
+
+                                    <p id="jelly-3d-desc" class="text-xs sm:text-sm text-slate-300 leading-relaxed mt-3">
+                                        3D model üzerindeki numaralı pinlere veya yukarıdaki listeden herhangi bir anatomik yapıya tıklayarak doku ve işlev detaylarını inceleyebilirsiniz.
+                                    </p>
+                                </div>
+
+                                <div class="mt-4 pt-3 border-t border-sky-300/15">
+                                    <div class="text-[11px] uppercase tracking-wider text-sky-300/75 font-semibold mb-1">Biyolojik İşlev</div>
+                                    <p id="jelly-3d-function" class="text-xs text-sky-100/90 leading-relaxed">
+                                        Kalp ve merkezi beyin olmaksızın difüzyon, elastik mezoglea ve merkeziyetsiz sinir ağı ile yaşamsal işlevler sürdürülür.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mobil 3D Detay Modalı -->
+                <div id="mobile-detail-modal" class="fixed inset-x-3 bottom-3 z-40 hidden lg:hidden glass-panel rounded-2xl p-4 shadow-2xl border border-sky-400/40">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <span id="mob-badge" class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300"></span>
+                            <h3 id="mob-title" class="text-base font-bold text-white mt-1.5"></h3>
+                            <p id="mob-latin" class="text-xs italic text-sky-200/70"></p>
+                        </div>
+                        <button id="btn-close-mobile-modal" type="button" class="text-xs px-2.5 py-1 rounded-lg bg-slate-800/80 text-slate-300 hover:text-white">
+                            Kapat ✕
+                        </button>
+                    </div>
+                    <p id="mob-desc" class="text-xs text-slate-300 leading-relaxed mt-2.5"></p>
+                    <p id="mob-func" class="text-xs text-sky-200 font-medium mt-2 pt-2 border-t border-sky-300/15"></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEKME 5: 3D NEMATOSİST (YAKÜCÜ KAPSÜL) SİMÜLASYONU -->
+        <section id="tab-nematosist" class="tab-panel hidden py-8 md:py-14">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-3xl mx-auto mb-8">
+                    <span class="text-cyan-400 text-xs font-bold uppercase tracking-widest">Hücresel Savunma & Avlanma</span>
+                    <h2 class="font-display text-2xl sm:text-4xl font-bold text-white mt-2">3D Nematosist (Yakücü Kapsül) Simülasyonu</h2>
+                    <p class="text-slate-400 mt-2 text-sm sm:text-base">
+                        Denizanası dokunaçlarındaki <em>nidosit</em> hücrelerinin zıpkın mekanizmasını ve yüksek basınçlı boşalma aşamalarını 3D olarak inceleyin[cite: 1].
+                    </p>
+                </div>
+
+                <div class="glass-panel rounded-3xl p-4 sm:p-6 border border-cyan-400/30 glow-cyan">
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                        <!-- Sol Kontrol ve Bilgi Paneli -->
+                        <div class="lg:col-span-4 bg-abyss/75 border border-sky-400/20 p-5 rounded-2xl flex flex-col justify-between gap-4">
+                            <div class="space-y-3">
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-cyan-400 bg-cyan-950/60 px-2.5 py-1 rounded-full border border-cyan-800/40 inline-block">
+                                    Biyolojik Zıpkın
+                                </span>
+                                <h3 class="font-display text-xl font-bold text-white">Nematosist (Yakücü Kapsül)</h3>
+                                <p class="text-xs text-slate-400 leading-relaxed">
+                                    Denizanası dokunaçlarında bulunan doğanın en hızlı hücresel mekanizması[cite: 1].
+                                </p>
+
+                                <div id="nem-desc-box" class="bg-slate-900/80 border border-slate-700/60 p-3.5 rounded-xl text-xs leading-relaxed text-slate-300">
+                                    <strong class="text-cyan-300 block mb-1">1. İstirahat (Kapalı) Hali</strong>
+                                    Kapsül kapalıdır ve yüksek osmotik basınç altında sıkıştırılmış zehirli iplik içeride beklemektedir[cite: 1].
+                                </div>
+
+                                <div class="flex flex-col gap-2 pt-1">
+                                    <button type="button" data-nem-phase="0" id="nem-btn-0" class="nem-phase-btn w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-between">
+                                        <span>1. İstirahat Hali</span>
+                                        <span class="w-2 h-2 rounded-full bg-slate-950"></span>
+                                    </button>
+                                    <button type="button" data-nem-phase="1" id="nem-btn-1" class="nem-phase-btn w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all flex items-center justify-between">
+                                        <span>2. Tetiklenme & Basınç</span>
+                                        <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                                    </button>
+                                    <button type="button" data-nem-phase="2" id="nem-btn-2" class="nem-phase-btn w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all flex items-center justify-between">
+                                        <span>3. Zıpkın Fırlaması & Zehir</span>
+                                        <span class="w-2 h-2 rounded-full bg-rose-400"></span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="text-[11px] text-slate-400 border-t border-slate-800 pt-3 text-center">
+                                Fareyle veya parmağınızla sürükleyerek 3D modeli her yöne döndürebilirsiniz[cite: 1].
+                            </div>
+                        </div>
+
+                        <!-- Sağ 3D Render Canvas -->
+                        <div class="lg:col-span-8 relative rounded-2xl overflow-hidden bg-abyss border border-slate-800 h-[380px] sm:h-[470px]">
+                            <canvas id="nematocyst-canvas" class="w-full h-full block"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEKME 6: KARŞILAŞTIRMALI FİZYOLOJİK MEKANİZMALAR -->
+        <section id="tab-sistemler" class="tab-panel hidden py-8 md:py-14">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-3xl mx-auto mb-12">
+                    <span class="text-cyan-400 text-xs font-bold uppercase tracking-widest">Biyolojik Karşılaştırma</span>
+                    <h2 class="font-display text-2xl sm:text-4xl font-bold text-white mt-2">Organ Sistemleri Yerine Geçen Stratejiler</h2>
+                    <p class="text-slate-400 mt-3 text-sm sm:text-base">
+                        Omurgalılardaki kalp ve beyin sistemlerinin görevleri, denizanalarında çok daha az enerji tüketen doğrudan hücresel mekanizmalarla karşılanır.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="glass-panel rounded-3xl p-6 sm:p-8 border-t-4 border-t-cyan-400">
+                        <div class="flex items-center space-x-3 mb-5">
+                            <div class="p-3 rounded-2xl bg-cyan-500/15 text-biolumCyan">
+                                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                            </div>
+                            <h3 class="font-display text-xl sm:text-2xl font-bold text-white">Kalp Yoksa Dolaşım Nasıl Olur?</h3>
+                        </div>
+
+                        <p class="text-slate-300 text-sm sm:text-base leading-relaxed mb-6">
+                            Kalbin temel görevi, oksijen ve besinleri vücudun derinliklerindeki hücrelere basınçla pompalamaktır. Ancak denizanalarında buna ihtiyaç duyulmaz:
+                        </p>
+
+                        <div class="space-y-4">
+                            <div class="p-4 rounded-2xl bg-abyss/60 border border-slate-800">
+                                <h4 class="text-cyan-300 font-semibold text-sm mb-1">1. Sadece İki Hücre Tabakası (Yüksek Yüzey/Hacim Oranı)</h4>
+                                <p class="text-slate-400 text-xs sm:text-sm leading-relaxed">
+                                    Vücut duvarı yalnızca dış <strong>epidermis</strong> ve iç <strong>gastrodermis</strong> tabakalarından oluşur. Her hücre doğrudan deniz suyuyla veya gastrovasküler boşluktaki sıvıyla temas halindedir.
+                                </p>
+                            </div>
+
+                            <div class="p-4 rounded-2xl bg-abyss/60 border border-slate-800">
+                                <h4 class="text-cyan-300 font-semibold text-sm mb-1">2. Basit Difüzyon Yasası (Fick Yasası)</h4>
+                                <p class="text-slate-400 text-xs sm:text-sm leading-relaxed">
+                                    Difüzyon mesafesi milimetrenin kesirleri kadar küçük olduğu için oksijen (O₂) ve karbondioksit (CO₂), enerji (ATP) harcanmadan yoğunluk farkıyla doğrudan hücre zarlarından geçer.
+                                </p>
+                            </div>
+
+                            <div class="p-4 rounded-2xl bg-abyss/60 border border-slate-800">
+                                <h4 class="text-cyan-300 font-semibold text-sm mb-1">3. Gastrovasküler Kanallar ve Çan Hareketi</h4>
+                                <p class="text-slate-400 text-xs sm:text-sm leading-relaxed">
+                                    Denizanası yüzerken çanını ritmik olarak kasıp gevşetir. Bu mekanik hareket hem suyu vücut yüzeyinde yeniler hem de sindirim boşluğundaki besin sıvısını radyal kanallara dağıtır ve metabolik atıkların uzaklaştırılmasını sağlar.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel rounded-3xl p-6 sm:p-8 border-t-4 border-t-blue-400">
+                        <div class="flex items-center space-x-3 mb-5">
+                            <div class="p-3 rounded-2xl bg-blue-500/15 text-blue-300">
+                                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>
+                            </div>
+                            <h3 class="font-display text-xl sm:text-2xl font-bold text-white">Beyin Yoksa Hareket ve Algı Nasıl Yönetilir?</h3>
+                        </div>
+
+                        <p class="text-slate-300 text-sm sm:text-base leading-relaxed mb-6">
+                            Merkezi bir beyin (gangliyon) yerine denizanaları, radyal simetrilerine uygun olarak tüm vücudu saran merkeziyetsiz bir sinir ağı kullanır:
+                        </p>
+
+                        <div class="space-y-4">
+                            <div class="p-4 rounded-2xl bg-abyss/60 border border-slate-800">
+                                <h4 class="text-blue-300 font-semibold text-sm mb-1">1. Çift Katmanlı Sinir Ağı (Motor ve Difüz Ağlar)</h4>
+                                <p class="text-slate-400 text-xs sm:text-sm leading-relaxed">
+                                    İki ayrı sinir ağı bulunur: <strong>Difüz duyusal-beslenme ağı</strong> yavaş dokunaç ve av yakalama hareketlerini kontrol ederken, <strong>motor yüzme ağı</strong> elektriksel sinyalleri çan kaslarına her yöne eşit hızda iletir.
+                                </p>
+                            </div>
+
+                            <div class="p-4 rounded-2xl bg-abyss/60 border border-slate-800">
+                                <h4 class="text-blue-300 font-semibold text-sm mb-1">2. Rhopalia: Mini Duyu İstasyonları</h4>
+                                <p class="text-slate-400 text-xs sm:text-sm leading-relaxed">
+                                    <em>Scyphozoa</em> sınıfı denizanalarının (ör. <em>Aurelia aurita</em>) çan kenarında genellikle 8 adet bulunan <strong>rhopalia</strong> yapıları (kutu denizanalarında 4 adet); ışığı algılayan <em>osellus</em> (göz benekleri) ve yerçekimi/eğimi algılayan <em>statosist</em> keseciklerini barındırır.
+                                </p>
+                            </div>
+
+                            <div class="p-4 rounded-2xl bg-abyss/60 border border-slate-800">
+                                <h4 class="text-blue-300 font-semibold text-sm mb-1">3. Pacemaker (Kalp Pili Benzeri) Nöronlar</h4>
+                                <p class="text-slate-400 text-xs sm:text-sm leading-relaxed">
+                                    Rhopalia içindeki özelleşmiş nöronlar kendiliğinden ritmik elektriksel uyarılar üretir. Bu sinyaller çan kaslarını eşzamanlı kasarak düzenli yüzme ritmi oluşturur.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEKME 7: SİNİR AĞI SİMÜLASYONU -->
+        <section id="tab-simulasyon" class="tab-panel hidden py-8 md:py-14">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-3xl mx-auto mb-10">
+                    <span class="text-cyan-400 text-xs font-bold uppercase tracking-widest">Deneysel Modelleme</span>
+                    <h2 class="font-display text-2xl sm:text-4xl font-bold text-white mt-2">Sinir Ağı (Nerve Net) Sinyal Simülasyonu</h2>
+                    <p class="text-slate-400 mt-3 text-sm sm:text-base">
+                        Aşağıdaki uyaran butonlarına basarak veya doğrudan simülasyon ekranına tıklayarak merkezi bir beyin olmadan elektriksel impulsların sinir ağı boyunca nasıl yayıldığını gözlemleyin.
+                    </p>
+                </div>
+
+                <div class="glass-panel rounded-3xl p-4 sm:p-8 border border-cyan-400/30 glow-cyan">
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                        <div class="lg:col-span-8 relative rounded-2xl overflow-hidden bg-abyss border border-slate-800 h-[340px] sm:h-[420px]">
+                            <canvas id="nerveCanvas" class="w-full h-full block cursor-pointer"></canvas>
+                            
+                            <div class="absolute top-3 left-3 right-3 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
+                                <span id="sim-status-badge" class="px-3 py-1 rounded-lg bg-slate-900/85 border border-cyan-500/30 text-cyan-300 text-xs font-mono">
+                                    DURUM: Ritmik Pacemaker Yüzüşü
+                                </span>
+                                <span class="px-3 py-1 rounded-lg bg-slate-900/85 border border-slate-700 text-slate-300 text-xs font-mono">
+                                    İletim: Çift Yönlü Sinaps
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-4 space-y-4">
+                            <h3 class="font-display text-lg font-bold text-white">Uyaran Kontrolleri</h3>
+                            <p class="text-xs text-slate-400">
+                                Bir uyaran seçin veya doğrudan simülasyon ekranındaki denizanasının üzerine tıklayın:
+                            </p>
+
+                            <div class="space-y-3">
+                                <button id="btn-stim-touch" type="button" class="w-full p-3.5 rounded-xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 hover:from-cyan-500/35 hover:to-blue-500/35 border border-cyan-400/40 text-left transition group">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-semibold text-sm text-cyan-200 group-hover:text-white">1. Dokunma / Av Uyarısı Ver</span>
+                                        <span class="text-xs px-2 py-0.5 rounded bg-cyan-400/20 text-cyan-300">Mekanik</span>
+                                    </div>
+                                    <p class="text-xs text-slate-400 mt-1">Dokunaçtan başlayan sinyal tüm çana yayılır ve hızlı kaçış/kasılma tepkisi oluşturur.</p>
+                                </button>
+
+                                <button id="btn-stim-light" type="button" class="w-full p-3.5 rounded-xl bg-gradient-to-r from-amber-500/15 to-cyan-500/15 hover:from-amber-500/25 hover:to-cyan-500/25 border border-amber-400/40 text-left transition group">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-semibold text-sm text-amber-200 group-hover:text-white">2. Işık / Yerçekimi Uyarısı Ver</span>
+                                        <span class="text-xs px-2 py-0.5 rounded bg-amber-400/20 text-amber-300">Rhopalia</span>
+                                    </div>
+                                    <p class="text-xs text-slate-400 mt-1">Çan kenarındaki rhopalia duyu organları aktive olur ve yön düzeltme sinyali gönderir.</p>
+                                </button>
+
+                                <button id="btn-stim-reset" type="button" class="w-full py-2.5 px-4 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-xs font-medium transition">
+                                    Normal Pacemaker Ritmine Dön
+                                </button>
+                            </div>
+
+                            <div class="p-4 rounded-2xl bg-abyss/80 border border-sky-500/20">
+                                <span class="text-[11px] uppercase tracking-wider text-cyan-400 font-bold block mb-1">Simülasyon Gözlem Analizi</span>
+                                <p id="sim-explanation" class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                                    Şu anda çan kenarındaki <strong>rhopalia</strong> düğümleri düşük frekanslı düzenli sinyaller üreterek denizanasının su sütununda asılı kalmasını sağlıyor.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEKME 8: PROJE KÜNYESİ VE KAYNAKÇA -->
+        <section id="tab-kunye" class="tab-panel hidden py-8 md:py-14">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                    <div class="lg:col-span-5 space-y-4">
+                        <span class="text-cyan-400 text-xs font-bold uppercase tracking-widest">TÜBİTAK 2204-A</span>
+                        <h2 class="font-display text-2xl sm:text-3xl font-bold text-white">Proje Künyesi</h2>
+                        <p class="text-xs text-slate-400">
+                            * Sunum öncesinde aşağıdaki alanları kendi proje bilgilerinizle güncelleyebilirsiniz.
+                        </p>
+
+                        <div class="glass-panel rounded-2xl p-6 space-y-3.5 text-sm">
+                            <div class="flex justify-between border-b border-slate-800 pb-2.5">
+                                <span class="text-slate-400">Proje Alanı:</span>
+                                <span class="text-white font-medium">Biyoloji</span>
+                            </div>
+                            <div class="flex justify-between border-b border-slate-800 pb-2.5">
+                                <span class="text-slate-400">Proje Öğrencisi:</span>
+                                <span class="text-cyan-200 font-medium">[Adınız Soyadınız]</span>
+                            </div>
+                            <div class="flex justify-between border-b border-slate-800 pb-2.5">
+                                <span class="text-slate-400">Danışman Öğretmen:</span>
+                                <span class="text-white font-medium">[Danışman Öğretmen Adı]</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Okul / Kurum:</span>
+                                <span class="text-white font-medium">[Lisenizin Adı]</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-7 space-y-4">
+                        <span class="text-cyan-400 text-xs font-bold uppercase tracking-widest">Literatür</span>
+                        <h2 class="font-display text-2xl sm:text-3xl font-bold text-white">Bilimsel Kaynakça</h2>
+                        <ul class="space-y-3.5 text-xs sm:text-sm text-slate-300 glass-panel rounded-2xl p-6">
+                            <li class="flex items-start space-x-2.5">
+                                <span class="text-biolumCyan font-bold">1.</span>
+                                <span>Katsuki, T., & Greenspan, R. J. (2013). <em>Jellyfish nervous systems</em>. Current Biology, 23(14), R592-R594.</span>
+                            </li>
+                            <li class="flex items-start space-x-2.5">
+                                <span class="text-biolumCyan font-bold">2.</span>
+                                <span>Satterlie, R. A. (2011). <em>Do jellyfish have central nervous systems?</em> Journal of Experimental Biology, 214(8), 1215-1223.</span>
+                            </li>
+                            <li class="flex items-start space-x-2.5">
+                                <span class="text-biolumCyan font-bold">3.</span>
+                                <span>Campbell, N. A., & Reece, J. B. (2017). <em>Campbell Biyoloji</em> (11. Baskı). Palme Yayıncılık. (Bölüm 33: Omurgasızlar ve Dolaşım/Sinir Sistemlerinin Evrimi).</span>
+                            </li>
+                            <li class="flex items-start space-x-2.5">
+                                <span class="text-biolumCyan font-bold">4.</span>
+                                <span>Gemmell, B. J., et al. (2013). <em>Passive energy recapture in jellyfish contributes to propulsive advantage over other metazoans</em>. Proceedings of the National Academy of Sciences (PNAS), 110(44).</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ALT BİLGİ ÇUBUĞU -->
+    <footer class="border-t border-slate-800/80 py-5 bg-abyss/90">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
+            <p>© 2026 TÜBİTAK Lise Biyoloji Araştırma Projesi Dijital Sunum Platformu.</p>
+            <p class="text-cyan-400/70">Derin Okyanus Biyofizik • 3D Anatomi & Nematosist Modeli</p>
+        </div>
+    </footer>
+
+    <!-- SEKME YÖNETİCİSİ, 2D ANATOMİ, NEMATOSİST VE SİNİR AĞI SİMÜLASYONU -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- 1. SEKME (TAB) SİSTEMİ ---
+            const tabPanels = document.querySelectorAll('.tab-panel');
+            const navTabButtons = document.querySelectorAll('.nav-tab');
+            const tabTriggers = document.querySelectorAll('.tab-trigger');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            let activeTabId = 'giris';
+
+            function activateTab(tabId) {
+                const targetPanel = document.getElementById('tab-' + tabId);
+                if (!targetPanel) return;
+
+                activeTabId = tabId;
+
+                tabPanels.forEach(panel => {
+                    panel.classList.add('hidden');
+                });
+                targetPanel.classList.remove('hidden');
+
+                navTabButtons.forEach(btn => {
+                    const isMatch = btn.getAttribute('data-tab-target') === tabId;
+                    if (isMatch) {
+                        btn.classList.add('bg-cyan-500/20', 'text-cyan-300', 'border', 'border-cyan-400/40');
+                        btn.classList.remove('text-slate-300', 'text-slate-200');
+                    } else {
+                        btn.classList.remove('bg-cyan-500/20', 'text-cyan-300', 'border', 'border-cyan-400/40');
+                        btn.classList.add('text-slate-300');
+                    }
+                });
+
+                mobileMenu.classList.add('hidden');
+                mobileMenuBtn.setAttribute('aria-expanded', 'false');
+
+                if (tabId !== 'anatomi3d') {
+                    document.getElementById('mobile-detail-modal')?.classList.add('hidden');
+                }
+
+                window.dispatchEvent(new CustomEvent('app:tabchange', { detail: { tabId } }));
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            tabTriggers.forEach(trigger => {
+                trigger.addEventListener('click', () => {
+                    const target = trigger.getAttribute('data-tab-target');
+                    if (target) activateTab(target);
+                });
+            });
+
+            mobileMenuBtn.addEventListener('click', () => {
+                const isHidden = mobileMenu.classList.toggle('hidden');
+                mobileMenuBtn.setAttribute('aria-expanded', String(!isHidden));
+            });
+
+            // --- 2. İNTERAKTİF 2D ANATOMİ ---
+            const anatomyData = {
+                mezoglea: {
+                    badge: "Yapı 01 / 04 • Hücre Dışı Matriks",
+                    analog: "İskelet & Enerji Tasarrufu",
+                    title: "Mezoglea Tabakası",
+                    desc: "Denizanasının dış deri tabakası (epidermis) ile iç sindirim tabakası (gastrodermis) arasında yer alan; %95 ila %98 oranında sudan, kolajen liflerinden ve elastik proteinlerden oluşan jelatinimsi yapıdır.",
+                    mechanism: "Mezoglea canlı hücre yoğunluğu çok düşük olan bir tabaka olduğu için oksijen tüketimi neredeyse sıfırdır. Bu sayede organizmanın enerji ihtiyacı minimumda kalır ve kalp gibi yüksek enerji harcayan bir pompaya gerek duyulmaz. Ayrıca elastik yapısı kas kasılmasından sonra çanın eski formuna dönmesini sağlayan pasif bir yay gibi çalışır.",
+                    principle: "Elastik Geri Tepme & Düşük Metabolizma",
+                    metric: "%96 Su / %4 Protein-Tuz"
+                },
+                difuzyon: {
+                    badge: "Yapı 02 / 04 • Dolaşım & Sindirim",
+                    analog: "Kalp ve Damar Alternatifi",
+                    title: "Gastrovasküler Boşluk ve Difüzyon",
+                    desc: "Denizanalarında hem sindirim hem de madde iletimi tek bir merkezi boşluk (gastrovasküler boşluk) ve buradan çan kenarına uzanan radyal kanallar aracılığıyla gerçekleştirilir.",
+                    mechanism: "Vücut duvarı yalnızca iki hücre tabakası kalınlığında olduğundan her hücre doğrudan çevre suyuyla veya iç sıvıyla temas halindedir. Oksijen ve besin molekülleri, Fick Difüzyon Yasası uyarınca enerji harcanmadan yüksek yoğunluktan düşük yoğunluğa doğru doğrudan hücre içine geçer; atıklar da aynı yolla uzaklaştırılır.",
+                    principle: "Yüksek Yüzey/Hacim Oranı & Difüzyon",
+                    metric: "Difüzyon Mesafesi < 0.5 mm"
+                },
+                siniragi: {
+                    badge: "Yapı 03 / 04 • Sinirsel İletim",
+                    analog: "Merkezi Beyin Alternatifi",
+                    title: "Çift Katmanlı Difüz Sinir Ağı (Nerve Net)",
+                    desc: "Beyin veya omurilik gibi merkezi bir işlem birimi yerine, epidermis ve gastrodermis tabakalarının tabanına ağ şeklinde yayılmış nöronlardan oluşan merkeziyetsiz sinir sistemidir.",
+                    mechanism: "Sinapsların çoğu çift yönlü (simetrik) iletim yapabildiği için, vücudun herhangi bir noktasına dokunulduğunda elektriksel uyarı tüm çana yayılır. Hızlı motor ağı yüzme kaslarını eşzamanlı uyarırken, yavaş difüz ağ beslenme ve dokunaç hareketlerini koordine eder.",
+                    principle: "Çift Yönlü Sinaptik İletim",
+                    metric: "2 Ağ (Motor Yüzme & Difüz Beslenme)"
+                },
+                rhopalia: {
+                    badge: "Yapı 04 / 04 • Duyu & Ritim Merkezi",
+                    analog: "Göz, Denge Organı ve Pacemaker",
+                    title: "Rhopalia Duyu Organları",
+                    desc: "Scyphozoa sınıfı denizanalarının (ör. Aurelia aurita) çan kenarı boyunca düzenli aralıklarla (genellikle 8 adet; kutu denizanalarında 4 adet) dizilmiş özelleşmiş duyu ve ritim merkezleridir.",
+                    mechanism: "Her rhopalium; ışığı algılayan 'osellus' (göz benekleri), yerçekimi ve eğimi algılayan 'statosist' kesecikleri ve kendi kendine elektriksel impuls üreten 'pacemaker' nöronları içerir. Bu yapılar sayesinde denizanası beyin olmadan yönünü bulur ve ritmik olarak yüzer.",
+                    principle: "Otonom Pacemaker Uyarımı",
+                    metric: "Scyphozoa'da 8 / Cubozoa'da 4 Düğüm"
+                }
+            };
+
+            function selectAnatomy(key) {
+                const data = anatomyData[key];
+                if (!data) return;
+
+                document.getElementById('anatomy-badge').textContent = data.badge;
+                document.getElementById('anatomy-organ-analog').textContent = data.analog;
+                document.getElementById('anatomy-title').textContent = data.title;
+                document.getElementById('anatomy-desc').textContent = data.desc;
+                document.getElementById('anatomy-mechanism').textContent = data.mechanism;
+                document.getElementById('anatomy-principle').textContent = data.principle;
+                document.getElementById('anatomy-metric').textContent = data.metric;
+
+                document.querySelectorAll('.anatomy-btn').forEach(btn => {
+                    btn.classList.remove('bg-cyan-500', 'text-abyss');
+                    btn.classList.add('bg-slate-800/80', 'text-slate-300');
+                });
+                const activeBtn = document.getElementById('btn-' + key);
+                if (activeBtn) {
+                    activeBtn.classList.remove('bg-slate-800/80', 'text-slate-300');
+                    activeBtn.classList.add('bg-cyan-500', 'text-abyss');
+                }
+            }
+
+            document.querySelectorAll('.anatomy-node').forEach(node => {
+                node.addEventListener('click', () => {
+                    selectAnatomy(node.getAttribute('data-part'));
+                });
+            });
+
+            document.querySelectorAll('.anatomy-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    selectAnatomy(btn.getAttribute('data-select-part'));
+                });
+            });
+
+            // --- 3. 3D NEMATOSİST (YAKÜCÜ KAPSÜL) SİMÜLASYONU ---
+            const nemCanvas = document.getElementById('nematocyst-canvas');
+            const nemCtx = nemCanvas.getContext('2d');
+
+            let nemWidth = 0;
+            let nemHeight = 0;
+            let nemLoopRunning = false;
+
+            let rotX = 0.35;
+            let rotY = 0.45;
+            let targetRotX = 0.35;
+            let targetRotY = 0.45;
+            let isDraggingNem = false;
+            let nemLastX = 0;
+            let nemLastY = 0;
+            let currentNemPhase = 0;
+            let nemAnimProgress = 0;
+
+            function resizeNemCanvas() {
+                if (activeTabId !== 'nematosist') return;
+                const rect = nemCanvas.parentElement.getBoundingClientRect();
+                nemWidth = Math.max(1, rect.width);
+                nemHeight = Math.max(1, rect.height);
+                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                nemCanvas.width = nemWidth * dpr;
+                nemCanvas.height = nemHeight * dpr;
+                nemCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            }
+
+            window.addEventListener('resize', resizeNemCanvas);
+
+            nemCanvas.addEventListener('mousedown', e => {
+                isDraggingNem = true;
+                nemLastX = e.clientX;
+                nemLastY = e.clientY;
+            });
+
+            window.addEventListener('mousemove', e => {
+                if (!isDraggingNem) return;
+                const dx = e.clientX - nemLastX;
+                const dy = e.clientY - nemLastY;
+                targetRotY += dx * 0.008;
+                targetRotX = Math.max(-1.2, Math.min(1.2, targetRotX + dy * 0.008));
+                nemLastX = e.clientX;
+                nemLastY = e.clientY;
+            });
+
+            window.addEventListener('mouseup', () => {
+                isDraggingNem = false;
+            });
+
+            nemCanvas.addEventListener('touchstart', e => {
+                if (e.touches.length === 1) {
+                    isDraggingNem = true;
+                    nemLastX = e.touches[0].clientX;
+                    nemLastY = e.touches[0].clientY;
+                }
+            }, { passive: true });
+
+            window.addEventListener('touchmove', e => {
+                if (!isDraggingNem || e.touches.length !== 1) return;
+                const dx = e.touches[0].clientX - nemLastX;
+                const dy = e.touches[0].clientY - nemLastY;
+                targetRotY += dx * 0.009;
+                targetRotX = Math.max(-1.2, Math.min(1.2, targetRotX + dy * 0.009));
+                nemLastX = e.touches[0].clientX;
+                nemLastY = e.touches[0].clientY;
+            }, { passive: true });
+
+            window.addEventListener('touchend', () => {
+                isDraggingNem = false;
+            });
+
+            function setNemPhase(p) {
+                currentNemPhase = p;
+                nemAnimProgress = 0;
+
+                for (let i = 0; i < 3; i++) {
+                    const btn = document.getElementById(`nem-btn-${i}`);
+                    if (!btn) continue;
+                    if (i === p) {
+                        btn.className = "nem-phase-btn w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-between";
+                    } else {
+                        btn.className = "nem-phase-btn w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all flex items-center justify-between";
+                    }
+                }
+
+                const descBox = document.getElementById('nem-desc-box');
+                if (p === 0) {
+                    descBox.innerHTML = `<strong class="text-cyan-300 block mb-1">1. İstirahat (Kapalı) Hali</strong>Kapsül kapalıdır ve yüksek osmotik basınç altında sıkıştırılmış zehirli iplik içeride beklemektedir.`;
+                } else if (p === 1) {
+                    descBox.innerHTML = `<strong class="text-cyan-400 block mb-1">2. Tetiklenme Anı</strong>Uyarı alındığında kapak açılır ve dışarıdaki su hızla kapsülün içine dolmaya başlar.`;
+                } else {
+                    descBox.innerHTML = `<strong class="text-rose-400 block mb-1">3. Zıpkın ve Zehir Enjeksiyonu</strong>Sıkışan iplik ters dönerek milisaniyeler içinde dışarı fırlar ve avın derisini deler.`;
+                }
+            }
+
+            document.querySelectorAll('.nem-phase-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const phaseNum = Number(btn.getAttribute('data-nem-phase'));
+                    setNemPhase(phaseNum);
+                });
+            });
+
+            function projectNem3D(x, y, z) {
+                const cosY = Math.cos(rotY);
+                const sinY = Math.sin(rotY);
+                const x1 = x * cosY - z * sinY;
+                const z1 = z * cosY + x * sinY;
+
+                const cosX = Math.cos(rotX);
+                const sinX = Math.sin(rotX);
+                const y2 = y * cosX - z1 * sinX;
+                const z2 = z1 * cosX + y * sinX;
+
+                const fov = 550;
+                const scale = fov / (fov + z2 + 180);
+
+                return {
+                    x: nemWidth * 0.52 + x1 * scale * 1.25,
+                    y: nemHeight * 0.56 + y2 * scale * 1.25,
+                    scale: scale,
+                    z: z2
+                };
+            }
+
+            function animateNematocyst() {
+                if (activeTabId !== 'nematosist') {
+                    nemLoopRunning = false;
+                    return;
+                }
+                nemLoopRunning = true;
+
+                rotX += (targetRotX - rotX) * 0.1;
+                rotY += (targetRotY - rotY) * 0.1;
+                if (nemAnimProgress < 1) nemAnimProgress = Math.min(1, nemAnimProgress + 0.035);
+
+                nemCtx.clearRect(0, 0, nemWidth, nemHeight);
+
+                const bgGrad = nemCtx.createRadialGradient(nemWidth * 0.52, nemHeight * 0.52, 40, nemWidth * 0.52, nemHeight * 0.52, Math.max(nemWidth, nemHeight) * 0.7);
+                bgGrad.addColorStop(0, '#0a223f');
+                bgGrad.addColorStop(0.6, '#030b17');
+                bgGrad.addColorStop(1, '#01050a');
+                nemCtx.fillStyle = bgGrad;
+                nemCtx.fillRect(0, 0, nemWidth, nemHeight);
+
+                const primitives = [];
+                const cellCenter = projectNem3D(0, 0, 0);
+                primitives.push({
+                    z: cellCenter.z + 50,
+                    draw: () => {
+                        nemCtx.save();
+                        nemCtx.strokeStyle = 'rgba(56, 189, 248, 0.25)';
+                        nemCtx.lineWidth = 1.5;
+                        nemCtx.fillStyle = 'rgba(14, 116, 144, 0.08)';
+                        nemCtx.beginPath();
+                        nemCtx.ellipse(cellCenter.x, cellCenter.y, 95 * cellCenter.scale, 145 * cellCenter.scale, 0, 0, Math.PI * 2);
+                        nemCtx.fill();
+                        nemCtx.stroke();
+                        nemCtx.restore();
+                    }
+                });
+
+                const capTopY = -75;
+                const capBotY = 75;
+                const capR = 48;
+                const topCenter = projectNem3D(0, capTopY, 0);
+                const botCenter = projectNem3D(0, capBotY, 0);
+
+                primitives.push({
+                    z: topCenter.z,
+                    draw: () => {
+                        nemCtx.save();
+                        nemCtx.strokeStyle = 'rgba(56, 189, 248, 0.85)';
+                        nemCtx.lineWidth = 3;
+                        nemCtx.fillStyle = 'rgba(14, 165, 233, 0.18)';
+
+                        nemCtx.beginPath();
+                        nemCtx.ellipse(topCenter.x, topCenter.y, capR * topCenter.scale, (capR * 0.38) * topCenter.scale, 0, 0, Math.PI * 2);
+                        nemCtx.ellipse(botCenter.x, botCenter.y, capR * botCenter.scale, (capR * 0.38) * botCenter.scale, 0, 0, Math.PI * 2);
+                        nemCtx.fill();
+                        nemCtx.stroke();
+
+                        const p1 = projectNem3D(-capR, capTopY, 0);
+                        const p2 = projectNem3D(-capR, capBotY, 0);
+                        const p3 = projectNem3D(capR, capTopY, 0);
+                        const p4 = projectNem3D(capR, capBotY, 0);
+                        nemCtx.beginPath();
+                        nemCtx.moveTo(p1.x, p1.y); nemCtx.lineTo(p2.x, p2.y);
+                        nemCtx.moveTo(p3.x, p3.y); nemCtx.lineTo(p4.x, p4.y);
+                        nemCtx.stroke();
+                        nemCtx.restore();
+                    }
+                });
+
+                if (currentNemPhase === 0) {
+                    const coils = 10;
+                    for (let c = 0; c < coils; c++) {
+                        const u = c / coils;
+                        const y = -50 + u * 100;
+                        const p1 = projectNem3D(-24 + Math.sin(u * 12) * 8, y, -15);
+                        const p2 = projectNem3D(24 + Math.cos(u * 12) * 8, y + 8, 15);
+                        primitives.push({
+                            z: p1.z,
+                            draw: () => {
+                                nemCtx.save();
+                                nemCtx.strokeStyle = '#e879f9';
+                                nemCtx.lineWidth = 2.5;
+                                nemCtx.beginPath();
+                                nemCtx.moveTo(p1.x, p1.y);
+                                nemCtx.lineTo(p2.x, p2.y);
+                                nemCtx.stroke();
+                                nemCtx.restore();
+                            }
+                        });
+                    }
+                } else if (currentNemPhase === 1) {
+                    const lidProj = projectNem3D(0, capTopY - 22 * nemAnimProgress, 0);
+                    primitives.push({
+                        z: lidProj.z,
+                        draw: () => {
+                            nemCtx.save();
+                            nemCtx.strokeStyle = '#38bdf8';
+                            nemCtx.fillStyle = 'rgba(244, 63, 94, 0.3)';
+                            nemCtx.lineWidth = 2.5;
+                            nemCtx.beginPath();
+                            nemCtx.ellipse(lidProj.x, lidProj.y - 12, 18 * lidProj.scale, 7 * lidProj.scale, -0.4, 0, Math.PI * 2);
+                            nemCtx.fill();
+                            nemCtx.stroke();
+                            nemCtx.restore();
+                        }
+                    });
+                } else if (currentNemPhase === 2) {
+                    const tipProj = projectNem3D(0, capTopY - 170 * nemAnimProgress, 0);
+                    const baseProj = projectNem3D(0, capTopY, 0);
+                    primitives.push({
+                        z: tipProj.z,
+                        draw: () => {
+                            nemCtx.save();
+                            nemCtx.strokeStyle = '#f43f5e';
+                            nemCtx.lineWidth = 4;
+                            nemCtx.beginPath();
+                            nemCtx.moveTo(baseProj.x, baseProj.y);
+                            nemCtx.lineTo(tipProj.x, tipProj.y);
+                            nemCtx.stroke();
+
+                            nemCtx.strokeStyle = '#fde047';
+                            nemCtx.lineWidth = 2;
+                            const b1 = projectNem3D(-14, capTopY - 60 * nemAnimProgress, 0);
+                            const b2 = projectNem3D(14, capTopY - 110 * nemAnimProgress, 0);
+                            nemCtx.beginPath();
+                            nemCtx.moveTo(b1.x, b1.y); nemCtx.lineTo(b1.x - 18, b1.y - 10);
+                            nemCtx.moveTo(b2.x, b2.y); nemCtx.lineTo(b2.x + 18, b2.y - 10);
+                            nemCtx.stroke();
+                            nemCtx.restore();
+                        }
+                    });
+                }
+
+                const hairProj = projectNem3D(0, -115, 0);
+                primitives.push({
+                    z: hairProj.z,
+                    draw: () => {
+                        nemCtx.save();
+                        nemCtx.strokeStyle = currentNemPhase > 0 ? '#f43f5e' : '#38bdf8';
+                        nemCtx.lineWidth = 2.5;
+                        nemCtx.beginPath();
+                        nemCtx.moveTo(hairProj.x, hairProj.y + 40);
+                        nemCtx.quadraticCurveTo(hairProj.x + 15, hairProj.y, hairProj.x + 8, hairProj.y - 25);
+                        nemCtx.stroke();
+                        nemCtx.restore();
+                    }
+                });
+
+                primitives.sort((a, b) => b.z - a.z);
+                primitives.forEach(p => p.draw());
+
+                requestAnimationFrame(animateNematocyst);
+            }
+
+            // --- 4. 2D SİNİR AĞI CANVAS SİMÜLASYONU ---
+            const canvas = document.getElementById('nerveCanvas');
+            const ctx = canvas.getContext('2d');
+            let width = 0;
+            let height = 0;
+            let simLoopRunning = false;
+
+            let phase = 0;
+            let pulseSpeed = 0.04;
+            let contractionAmp = 1.0;
+            let signals = [];
+            let activeRhopaliaGlow = 0;
+
+            function resizeCanvas() {
+                if (activeTabId !== 'simulasyon') return;
+                const rect = canvas.parentElement.getBoundingClientRect();
+                canvas.width = Math.max(1, rect.width);
+                canvas.height = Math.max(1, rect.height);
+                width = canvas.width;
+                height = canvas.height;
+            }
+
+            window.addEventListener('resize', resizeCanvas);
+
+            function triggerStimulus(type, customX = null, customY = null) {
+                const cx = width / 2;
+                const cy = height * 0.45;
+                const statusBadge = document.getElementById('sim-status-badge');
+                const explanation = document.getElementById('sim-explanation');
+
+                if (type === 'touch') {
+                    pulseSpeed = 0.095;
+                    contractionAmp = 1.45;
+                    const originX = customX !== null ? customX : cx - 45;
+                    const originY = customY !== null ? customY : cy + 65;
+
+                    signals.push({ x: originX, y: originY, r: 5, maxR: 220, color: '#00f2fe', alpha: 1 });
+                    setTimeout(() => {
+                        signals.push({ x: originX, y: originY, r: 5, maxR: 220, color: '#38bdf8', alpha: 0.9 });
+                    }, 180);
+
+                    statusBadge.textContent = "DURUM: Mekanik Uyarı! Hızlı Kasılma Tepkisi";
+                    explanation.innerHTML = "<strong>Dokunma Uyarısı:</strong> Reseptörler uyarıldı. Sinyal <em>difüz sinir ağı</em> üzerinden tüm çana eşzamanlı yayıldı ve hızlı kaçış kasılması tetiklendi.";
+                } else if (type === 'light') {
+                    pulseSpeed = 0.065;
+                    contractionAmp = 1.2;
+                    activeRhopaliaGlow = 1.0;
+                    signals.push({ x: cx - 85, y: cy + 15, r: 4, maxR: 180, color: '#facc15', alpha: 1 });
+                    signals.push({ x: cx + 85, y: cy + 15, r: 4, maxR: 180, color: '#facc15', alpha: 1 });
+
+                    statusBadge.textContent = "DURUM: Rhopalia Işık/Denge Uyarısı Aktif";
+                    explanation.innerHTML = "<strong>Işık & Yerçekimi Uyarısı:</strong> Çan kenarındaki <em>rhopalia</em> organları ışık değişimini algıladı ve denizanası yönünü düzeltmek için pacemaker ritmini hızlandırdı.";
+                } else {
+                    pulseSpeed = 0.04;
+                    contractionAmp = 1.0;
+                    activeRhopaliaGlow = 0;
+                    signals = [];
+                    statusBadge.textContent = "DURUM: Ritmik Pacemaker Yüzüşü";
+                    explanation.innerHTML = "Şu anda çan kenarındaki <strong>rhopalia</strong> düğümleri düşük frekanslı düzenli sinyaller üreterek denizanasının su sütununda asılı kalmasını sağlıyor.";
+                }
+            }
+
+            document.getElementById('btn-stim-touch').addEventListener('click', () => triggerStimulus('touch'));
+            document.getElementById('btn-stim-light').addEventListener('click', () => triggerStimulus('light'));
+            document.getElementById('btn-stim-reset').addEventListener('click', () => triggerStimulus('reset'));
+
+            canvas.addEventListener('click', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const clickY = e.clientY - rect.top;
+                triggerStimulus('touch', clickX, clickY);
+            });
+
+            function animateSimulation() {
+                if (activeTabId !== 'simulasyon') {
+                    simLoopRunning = false;
+                    return;
+                }
+                simLoopRunning = true;
+
+                ctx.clearRect(0, 0, width, height);
+
+                ctx.fillStyle = 'rgba(56, 189, 248, 0.12)';
+                for (let i = 0; i < 18; i++) {
+                    const px = ((i * 73 + phase * 10) % width);
+                    const py = ((i * 59 - phase * 18) % height + height) % height;
+                    ctx.beginPath();
+                    ctx.arc(px, py, (i % 2) + 1, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                phase += pulseSpeed;
+                if (activeRhopaliaGlow > 0) activeRhopaliaGlow = Math.max(0, activeRhopaliaGlow - 0.008);
+
+                if (pulseSpeed > 0.04) pulseSpeed -= 0.0003;
+                if (contractionAmp > 1.0) contractionAmp -= 0.003;
+
+                const cx = width / 2;
+                const cy = height * 0.44 + Math.sin(phase) * 8;
+                const squeeze = Math.sin(phase) * 14 * contractionAmp;
+                const bellW = 95 - squeeze;
+                const bellH = 78 + squeeze * 0.45;
+
+                const tentacleOffsets = [-65, -35, -10, 15, 40, 65];
+                tentacleOffsets.forEach((off, idx) => {
+                    const startX = cx + off * (bellW / 95);
+                    const startY = cy + 16;
+                    const sway = Math.sin(phase - idx * 0.6) * (12 * contractionAmp);
+
+                    ctx.beginPath();
+                    ctx.moveTo(startX, startY);
+                    ctx.bezierCurveTo(
+                        startX + sway, startY + 45,
+                        startX - sway, startY + 95,
+                        startX + sway * 0.7, startY + 135
+                    );
+                    ctx.strokeStyle = 'rgba(56, 189, 248, 0.55)';
+                    ctx.lineWidth = idx % 2 === 0 ? 2.5 : 3.5;
+                    ctx.stroke();
+                });
+
+                ctx.beginPath();
+                ctx.moveTo(cx - bellW, cy + 15);
+                ctx.bezierCurveTo(
+                    cx - bellW, cy - bellH,
+                    cx + bellW, cy - bellH,
+                    cx + bellW, cy + 15
+                );
+                ctx.quadraticCurveTo(cx, cy + 26, cx - bellW, cy + 15);
+
+                const grad = ctx.createRadialGradient(cx, cy - 25, 10, cx, cy, bellW + 20);
+                grad.addColorStop(0, 'rgba(0, 242, 254, 0.42)');
+                grad.addColorStop(1, 'rgba(8, 21, 41, 0.85)');
+                ctx.fillStyle = grad;
+                ctx.fill();
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
+
+                const nodes = [
+                    { x: cx - bellW * 0.85, y: cy + 12, isRhopalia: true },
+                    { x: cx + bellW * 0.85, y: cy + 12, isRhopalia: true },
+                    { x: cx - bellW * 0.45, y: cy - bellH * 0.35, isRhopalia: false },
+                    { x: cx + bellW * 0.45, y: cy - bellH * 0.35, isRhopalia: false },
+                    { x: cx, y: cy - bellH * 0.52, isRhopalia: false },
+                    { x: cx, y: cy - bellH * 0.15, isRhopalia: false }
+                ];
+
+                ctx.strokeStyle = 'rgba(0, 242, 254, 0.35)';
+                ctx.lineWidth = 1.2;
+                for (let i = 0; i < nodes.length; i++) {
+                    for (let j = i + 1; j < nodes.length; j++) {
+                        ctx.beginPath();
+                        ctx.moveTo(nodes[i].x, nodes[i].y);
+                        ctx.lineTo(nodes[j].x, nodes[j].y);
+                        ctx.stroke();
+                    }
+                }
+
+                nodes.forEach(n => {
+                    ctx.beginPath();
+                    ctx.arc(n.x, n.y, n.isRhopalia ? 5.5 : 3.2, 0, Math.PI * 2);
+                    if (n.isRhopalia) {
+                        ctx.fillStyle = activeRhopaliaGlow > 0.1 ? '#facc15' : '#00f2fe';
+                    } else {
+                        ctx.fillStyle = '#7dd3fc';
+                    }
+                    ctx.fill();
+                });
+
+                for (let i = signals.length - 1; i >= 0; i--) {
+                    const s = signals[i];
+                    s.r += 4.2;
+                    s.alpha = 1 - (s.r / s.maxR);
+
+                    if (s.alpha <= 0) {
+                        signals.splice(i, 1);
+                        continue;
+                    }
+
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                    ctx.strokeStyle = s.color;
+                    ctx.globalAlpha = s.alpha;
+                    ctx.lineWidth = 2.5;
+                    ctx.stroke();
+                    ctx.globalAlpha = 1;
+                }
+
+                requestAnimationFrame(animateSimulation);
+            }
+
+            window.addEventListener('app:tabchange', (e) => {
+                if (e.detail.tabId === 'simulasyon') {
+                    resizeCanvas();
+                    if (!simLoopRunning) animateSimulation();
+                } else if (e.detail.tabId === 'nematosist') {
+                    resizeNemCanvas();
+                    if (!nemLoopRunning) animateNematocyst();
+                }
+            });
+
+            activateTab('giris');
+        });
+    </script>
+
+    <!-- 3D AY DENİZANASI ANATOMİSİ KEŞİF SİSTEMİ (THREE.JS) -->
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        const ANATOMY_3D_DATA = [
+            {
+                id: 'exumbrella',
+                name: 'Dış Şemsiye (Ekzumbrella)',
+                latin: 'Exumbrella / Epidermis',
+                layer: 'Dış Tabaka',
+                color: '#38bdf8',
+                pinPos: [0, 1.35, 0.75],
+                explodeOffset: [0, 0.75, 0],
+                description: 'Çanın dış yüzeyini örten ince ektodermal/epidermal tabakadır. Çevre deniz suyu ile doğrudan gaz alışverişi ve koruyucu bariyer görevi görür.',
+                biologicalRole: 'İnce yapısı sayesinde difüzyon mesafesini kısaltır ve dış yüzeyi su akışına uyumlandırır.'
+            },
+            {
+                id: 'mesoglea',
+                name: 'Mezoglea Tabakası',
+                latin: 'Mesoglea',
+                layer: 'Orta Jelatinimsi Matriks',
+                color: '#22d3ee',
+                pinPos: [-1.15, 0.65, 0.85],
+                explodeOffset: [-0.45, 0.25, 0.45],
+                description: 'Epidermis ile gastrodermis arasında yer alan; büyük kısmı sudan, kolajen liflerinden ve elastik proteinlerden oluşan hidrostatik destek tabakasıdır.',
+                biologicalRole: 'Kas kasılmasından sonra şemsiyeye pasif elastik geri dönüş sağlar; metabolik yükü düşüktür.'
+            },
+            {
+                id: 'gonads',
+                name: 'Gonadlar (Üreme Halkaları)',
+                latin: 'Gonades (Tetrameric)',
+                layer: 'Gastrodermal Bölge',
+                color: '#f472b6',
+                pinPos: [0.95, 0.2, 0.95],
+                explodeOffset: [0.4, 0.05, 0.4],
+                description: 'Ay denizanasına özgü dörtlü at nalı biçimindeki üreme yapılarıdır. Gastrovasküler ceplerin tabanında konumlanır.',
+                biologicalRole: 'Gamet üretimi ve olgunlaşmasını gerçekleştirir; besinler doğrudan gastrovasküler sıvıdan sağlanır.'
+            },
+            {
+                id: 'oral-arms',
+                name: 'Ağız ve Oral Kollar',
+                latin: 'Manubrium & Brachia Oralia',
+                layer: 'Sindirim & Beslenme',
+                color: '#fbbf24',
+                pinPos: [0, -0.75, 0.75],
+                explodeOffset: [0, -0.45, 0.35],
+                description: 'Şemsiye alt merkezindeki ağız açıklığını çevreleyen dört kıvrımlı, silli ve knidosit taşıyan uzantıdır.',
+                biologicalRole: 'Plankton ve küçük avları yakalayıp mukus ve sil hareketiyle merkezi gastrovasküler boşluğa taşır.'
+            },
+            {
+                id: 'tentacles',
+                name: 'Marjinal Dokunaçlar & Rhopalia',
+                latin: 'Tentacula & Rhopalia',
+                layer: 'Çan Kenarı • Duyu & Savunma',
+                color: '#34d399',
+                pinPos: [1.55, -0.35, 0.55],
+                explodeOffset: [0.7, -0.25, 0.3],
+                description: 'Çan kenarı boyunca dizilen ince dokunaçlar ile ışığı (osellus) ve yerçekimini (statosist) algılayan rhopalia duyu merkezleridir.',
+                biologicalRole: 'Av yakalama, savunma ve ritmik yüzme pacemaker sinyallerinin koordinasyonuna katkı sağlar.'
+            }
+        ];
+
+        const jelly3dState = {
+            selectedPartId: null,
+            pulseEnabled: true,
+            exploded: false,
+            time: 0,
+            isActive: false
+        };
+
+        const pinElements3D = {};
+        const meshesByPart3D = {};
+
+        const container3D = document.getElementById('jelly-3d-canvas-container');
+        const pinsLayer3D = document.getElementById('jelly-3d-pins-layer');
+        const listEl3D = document.getElementById('jelly-3d-list');
+
+        const scene3D = new THREE.Scene();
+        const camera3D = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+        camera3D.position.set(0, 1.4, 6.2);
+
+        const renderer3D = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer3D.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer3D.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer3D.toneMappingExposure = 1.15;
+        container3D.appendChild(renderer3D.domElement);
+
+        const controls3D = new OrbitControls(camera3D, renderer3D.domElement);
+        controls3D.enableDamping = true;
+        controls3D.dampingFactor = 0.06;
+        controls3D.minDistance = 3.2;
+        controls3D.maxDistance = 12;
+        controls3D.target.set(0, -0.1, 0);
+
+        scene3D.add(new THREE.AmbientLight(0x7dd3fc, 0.75));
+        const keyLight3D = new THREE.DirectionalLight(0xe0f2fe, 1.6);
+        keyLight3D.position.set(4, 6, 5);
+        scene3D.add(keyLight3D);
+
+        const rimLight3D = new THREE.PointLight(0x22d3ee, 2.2, 14);
+        rimLight3D.position.set(-3, -1, -3);
+        scene3D.add(rimLight3D);
+
+        const jellyRoot3D = new THREE.Group();
+        scene3D.add(jellyRoot3D);
+
+        function registerPartMesh3D(partId, object) {
+            if (!meshesByPart3D[partId]) meshesByPart3D[partId] = [];
+            const baseScale = object.scale.clone();
+            const basePos = object.position.clone();
+            const mat = object.material;
+            const baseOpacity = mat && mat.transparent ? mat.opacity : 1;
+            const baseEmissiveIntensity = mat && 'emissiveIntensity' in mat ? mat.emissiveIntensity : 0;
+            meshesByPart3D[partId].push({
+                object,
+                baseScale,
+                basePos,
+                baseOpacity,
+                baseEmissiveIntensity
+            });
+        }
+
+        const bellGeo3D = new THREE.SphereGeometry(1.9, 48, 32, 0, Math.PI * 2, 0, Math.PI * 0.56);
+        const bellMat3D = new THREE.MeshPhysicalMaterial({
+            color: 0x38bdf8,
+            emissive: 0x0369a1,
+            emissiveIntensity: 0.25,
+            roughness: 0.15,
+            metalness: 0.05,
+            transparent: true,
+            opacity: 0.34,
+            side: THREE.DoubleSide,
+            depthWrite: false
+        });
+        const bellMesh3D = new THREE.Mesh(bellGeo3D, bellMat3D);
+        bellMesh3D.scale.set(1, 0.72, 1);
+        jellyRoot3D.add(bellMesh3D);
+        registerPartMesh3D('mesoglea', bellMesh3D);
+
+        const exoGeo3D = new THREE.SphereGeometry(1.94, 48, 24, 0, Math.PI * 2, 0, Math.PI * 0.42);
+        const exoMat3D = new THREE.MeshPhysicalMaterial({
+            color: 0x7dd3fc,
+            emissive: 0x0284c7,
+            emissiveIntensity: 0.15,
+            roughness: 0.1,
+            transparent: true,
+            opacity: 0.22,
+            side: THREE.DoubleSide,
+            depthWrite: false
+        });
+        const exoMesh3D = new THREE.Mesh(exoGeo3D, exoMat3D);
+        exoMesh3D.scale.set(1, 0.74, 1);
+        jellyRoot3D.add(exoMesh3D);
+        registerPartMesh3D('exumbrella', exoMesh3D);
+
+        for (let i = 0; i < 4; i++) {
+            const angle = (i * Math.PI) / 2 + Math.PI / 4;
+            const gonadGeo = new THREE.TorusGeometry(0.32, 0.085, 16, 36, Math.PI * 1.35);
+            const gonadMat = new THREE.MeshStandardMaterial({
+                color: 0xf472b6,
+                emissive: 0xdb2777,
+                emissiveIntensity: 0.35,
+                roughness: 0.35,
+                transparent: true,
+                opacity: 0.9
+            });
+            const gonad = new THREE.Mesh(gonadGeo, gonadMat);
+            gonad.position.set(Math.cos(angle) * 0.62, 0.22, Math.sin(angle) * 0.62);
+            gonad.rotation.x = Math.PI / 2;
+            gonad.rotation.z = angle + 0.4;
+            jellyRoot3D.add(gonad);
+            registerPartMesh3D('gonads', gonad);
+        }
+
+        for (let i = 0; i < 4; i++) {
+            const angle = (i * Math.PI) / 2;
+            const curvePoints = [];
+            for (let s = 0; s <= 12; s++) {
+                const t = s / 12;
+                const r = 0.22 + Math.sin(t * Math.PI * 2.5) * 0.12;
+                const y = -0.15 - t * 1.45;
+                curvePoints.push(new THREE.Vector3(
+                    Math.cos(angle) * 0.25 + Math.cos(t * 8 + i) * r * 0.5,
+                    y,
+                    Math.sin(angle) * 0.25 + Math.sin(t * 8 + i) * r * 0.5
+                ));
+            }
+            const curve = new THREE.CatmullRomCurve3(curvePoints);
+            const armGeo = new THREE.TubeGeometry(curve, 24, 0.075, 10, false);
+            const armMat = new THREE.MeshStandardMaterial({
+                color: 0xfbbf24,
+                emissive: 0xd97706,
+                emissiveIntensity: 0.2,
+                roughness: 0.4,
+                transparent: true,
+                opacity: 0.85
+            });
+            const arm = new THREE.Mesh(armGeo, armMat);
+            jellyRoot3D.add(arm);
+            registerPartMesh3D('oral-arms', arm);
+        }
+
+        const tentacleCount = 36;
+        for (let i = 0; i < tentacleCount; i++) {
+            const angle = (i / tentacleCount) * Math.PI * 2;
+            const radius = 1.84;
+            const pts = [];
+            const len = 1.1 + (i % 3) * 0.22;
+            for (let s = 0; s <= 8; s++) {
+                const t = s / 8;
+                pts.push(new THREE.Vector3(
+                    Math.cos(angle) * (radius + Math.sin(t * 4) * 0.05),
+                    -t * len,
+                    Math.sin(angle) * (radius + Math.sin(t * 4) * 0.05)
+                ));
+            }
+            const curve = new THREE.CatmullRomCurve3(pts);
+            const tGeo = new THREE.TubeGeometry(curve, 12, 0.016, 6, false);
+            const tMat = new THREE.MeshStandardMaterial({
+                color: 0x34d399,
+                emissive: 0x059669,
+                emissiveIntensity: 0.2,
+                roughness: 0.4,
+                transparent: true,
+                opacity: 0.72
+            });
+            const tent = new THREE.Mesh(tGeo, tMat);
+            jellyRoot3D.add(tent);
+            registerPartMesh3D('tentacles', tent);
+        }
+
+        function buildUI3D() {
+            ANATOMY_3D_DATA.forEach((part, idx) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.id = `jelly3d-list-btn-${part.id}`;
+                btn.className = 'w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-left text-xs font-medium bg-slate-900/70 border border-sky-300/10 hover:border-sky-400/40 hover:bg-sky-950/50 transition';
+                btn.innerHTML = `
+                    <span class="truncate text-slate-200">${idx + 1}. ${part.name}</span>
+                    <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${part.color}; box-shadow: 0 0 8px ${part.color};"></span>
+                `;
+                btn.addEventListener('click', () => selectAnatomyPart3D(part.id));
+                listEl3D.appendChild(btn);
+
+                const pin = document.createElement('button');
+                pin.type = 'button';
+                pin.id = `jelly3d-pin-${part.id}`;
+                pin.className = 'anatomy-pin-3d pointer-events-auto flex items-center gap-1.5 px-2 py-1 rounded-full bg-slate-950/85 border border-sky-300/35 text-[11px] font-semibold text-white shadow-lg';
+                pin.innerHTML = `
+                    <span class="pin-dot-3d w-3 h-3 rounded-full inline-block transition-transform" style="background-color: ${part.color}; box-shadow: 0 0 10px ${part.color};"></span>
+                    <span>${idx + 1}</span>
+                `;
+                pin.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    selectAnatomyPart3D(part.id);
+                });
+                pinsLayer3D.appendChild(pin);
+                pinElements3D[part.id] = pin;
+            });
+        }
+
+        function updateMeshHighlights3D() {
+            const hasSelection = Boolean(jelly3dState.selectedPartId);
+            Object.entries(meshesByPart3D).forEach(([partId, items]) => {
+                const isSelected = partId === jelly3dState.selectedPartId;
+                items.forEach(item => {
+                    const mat = item.object.material;
+                    if (!mat) return;
+                    if (!hasSelection) {
+                        mat.opacity = item.baseOpacity;
+                        if ('emissiveIntensity' in mat) mat.emissiveIntensity = item.baseEmissiveIntensity;
+                    } else if (isSelected) {
+                        mat.opacity = Math.min(1, Math.max(item.baseOpacity, 0.85));
+                        if ('emissiveIntensity' in mat) mat.emissiveIntensity = 0.85;
+                    } else {
+                        mat.opacity = item.baseOpacity * 0.35;
+                        if ('emissiveIntensity' in mat) mat.emissiveIntensity = item.baseEmissiveIntensity * 0.4;
+                    }
+                });
+            });
+        }
+
+        function selectAnatomyPart3D(partId) {
+            if (jelly3dState.selectedPartId === partId) {
+                clearSelection3D();
+                return;
+            }
+            jelly3dState.selectedPartId = partId;
+            const part = ANATOMY_3D_DATA.find(p => p.id === partId);
+            if (!part) return;
+
+            document.getElementById('jelly-3d-badge').textContent = part.layer;
+            document.getElementById('jelly-3d-title').textContent = part.name;
+            document.getElementById('jelly-3d-latin').textContent = part.latin;
+            document.getElementById('jelly-3d-desc').textContent = part.description;
+            document.getElementById('jelly-3d-function').textContent = part.biologicalRole;
+            const dot = document.getElementById('jelly-3d-dot');
+            dot.style.backgroundColor = part.color;
+            dot.style.boxShadow = `0 0 14px ${part.color}`;
+            document.getElementById('btn-3d-clear').classList.remove('hidden');
+
+            const mobModal = document.getElementById('mobile-detail-modal');
+            document.getElementById('mob-badge').textContent = part.layer;
+            document.getElementById('mob-title').textContent = part.name;
+            document.getElementById('mob-latin').textContent = part.latin;
+            document.getElementById('mob-desc').textContent = part.description;
+            document.getElementById('mob-func').textContent = 'Görevi: ' + part.biologicalRole;
+            mobModal.classList.remove('hidden');
+
+            ANATOMY_3D_DATA.forEach(p => {
+                const btn = document.getElementById(`jelly3d-list-btn-${p.id}`);
+                const pin = pinElements3D[p.id];
+                if (p.id === partId) {
+                    btn?.classList.add('bg-sky-900/50', 'border-sky-400/70');
+                    pin?.classList.add('active', 'border-white');
+                } else {
+                    btn?.classList.remove('bg-sky-900/50', 'border-sky-400/70');
+                    pin?.classList.remove('active', 'border-white');
+                }
+            });
+
+            updateMeshHighlights3D();
+        }
+
+        function clearSelection3D() {
+            jelly3dState.selectedPartId = null;
+            document.getElementById('jelly-3d-badge').textContent = 'Genel Bakış';
+            document.getElementById('jelly-3d-title').textContent = 'Bir Yapı Seçin';
+            document.getElementById('jelly-3d-latin').textContent = 'Aurelia aurita • Scyphozoa';
+            document.getElementById('jelly-3d-desc').textContent = '3D model üzerindeki numaralı pinlere veya yukarıdaki listeden herhangi bir anatomik yapıya tıklayarak doku ve işlev detaylarını inceleyebilirsiniz.';
+            document.getElementById('jelly-3d-function').textContent = 'Kalp ve merkezi beyin olmaksızın difüzyon, elastik mezoglea ve merkeziyetsiz sinir ağı ile yaşamsal işlevler sürdürülür.';
+            const dot = document.getElementById('jelly-3d-dot');
+            dot.style.backgroundColor = '#22d3ee';
+            dot.style.boxShadow = '0 0 12px #22d3ee';
+            document.getElementById('btn-3d-clear').classList.add('hidden');
+            document.getElementById('mobile-detail-modal').classList.add('hidden');
+
+            ANATOMY_3D_DATA.forEach(p => {
+                document.getElementById(`jelly3d-list-btn-${p.id}`)?.classList.remove('bg-sky-900/50', 'border-sky-400/70');
+                pinElements3D[p.id]?.classList.remove('active', 'border-white');
+            });
+
+            updateMeshHighlights3D();
+        }
+
+        function resize3D() {
+            const w = container3D.clientWidth;
+            const h = container3D.clientHeight;
+            if (w <= 0 || h <= 0) return;
+            camera3D.aspect = w / h;
+            camera3D.updateProjectionMatrix();
+            renderer3D.setSize(w, h);
+        }
+
+        document.getElementById('btn-3d-clear').addEventListener('click', clearSelection3D);
+        document.getElementById('btn-close-mobile-modal').addEventListener('click', clearSelection3D);
+
+        const pulse3DBtn = document.getElementById('btn-3d-pulse');
+        pulse3DBtn.addEventListener('click', () => {
+            jelly3dState.pulseEnabled = !jelly3dState.pulseEnabled;
+            pulse3DBtn.textContent = `Yüzme Ritmi: ${jelly3dState.pulseEnabled ? 'Açık' : 'Kapalı'}`;
+            pulse3DBtn.classList.toggle('bg-sky-500/30', jelly3dState.pulseEnabled);
+            pulse3DBtn.classList.toggle('text-sky-200', jelly3dState.pulseEnabled);
+            pulse3DBtn.classList.toggle('border-sky-400/40', jelly3dState.pulseEnabled);
+        });
+
+        const explode3DBtn = document.getElementById('btn-3d-explode');
+        explode3DBtn.addEventListener('click', () => {
+            jelly3dState.exploded = !jelly3dState.exploded;
+            explode3DBtn.textContent = jelly3dState.exploded ? 'Katmanları Birleştir' : 'Katmanları Ayır';
+            explode3DBtn.classList.toggle('bg-sky-500/30', jelly3dState.exploded);
+            explode3DBtn.classList.toggle('text-sky-200', jelly3dState.exploded);
+            explode3DBtn.classList.toggle('border-sky-400/40', jelly3dState.exploded);
+        });
+
+        document.getElementById('btn-3d-reset').addEventListener('click', () => {
+            camera3D.position.set(0, 1.4, 6.2);
+            controls3D.target.set(0, -0.1, 0);
+            controls3D.update();
+            clearSelection3D();
+        });
+
+        window.addEventListener('resize', () => {
+            if (jelly3dState.isActive) resize3D();
+        });
+
+        const tempVec3D = new THREE.Vector3();
+
+        function updatePinsPosition3D() {
+            const w = container3D.clientWidth;
+            const h = container3D.clientHeight;
+            if (w <= 0 || h <= 0) return;
+            jellyRoot3D.updateMatrixWorld();
+
+            ANATOMY_3D_DATA.forEach(part => {
+                const pin = pinElements3D[part.id];
+                if (!pin) return;
+                const offset = jelly3dState.exploded ? part.explodeOffset : [0, 0, 0];
+                tempVec3D.set(
+                    part.pinPos[0] + offset[0],
+                    part.pinPos[1] + offset[1],
+                    part.pinPos[2] + offset[2]
+                ).applyMatrix4(jellyRoot3D.matrixWorld);
+
+                const behindCamera = tempVec3D.z > 1;
+                tempVec3D.project(camera3D);
+
+                const x = (tempVec3D.x * 0.5 + 0.5) * w;
+                const y = (-tempVec3D.y * 0.5 + 0.5) * h;
+
+                pin.style.left = `${x}px`;
+                pin.style.top = `${y}px`;
+                pin.style.opacity = behindCamera ? '0' : '1';
+                pin.style.pointerEvents = behindCamera ? 'none' : 'auto';
+            });
+        }
+
+        function animate3D() {
+            if (!jelly3dState.isActive) return;
+            requestAnimationFrame(animate3D);
+
+            jelly3dState.time += 0.025;
+            const pulse = jelly3dState.pulseEnabled ? Math.sin(jelly3dState.time * 1.8) : 0;
+            jellyRoot3D.position.y = Math.sin(jelly3dState.time * 0.9) * 0.14 + pulse * 0.08;
+            jellyRoot3D.rotation.y += 0.003;
+
+            const explodeFactor = jelly3dState.exploded ? 1 : 0;
+            Object.entries(meshesByPart3D).forEach(([partId, items]) => {
+                const partData = ANATOMY_3D_DATA.find(p => p.id === partId);
+                const ex = partData ? partData.explodeOffset : [0, 0, 0];
+                items.forEach(item => {
+                    const targetX = item.basePos.x + ex[0] * explodeFactor;
+                    const targetY = item.basePos.y + ex[1] * explodeFactor;
+                    const targetZ = item.basePos.z + ex[2] * explodeFactor;
+                    item.object.position.lerp(tempVec3D.set(targetX, targetY, targetZ), 0.12);
+
+                    if (jelly3dState.pulseEnabled && (partId === 'mesoglea' || partId === 'exumbrella')) {
+                        item.object.scale.set(
+                            item.baseScale.x * (1 + pulse * 0.05),
+                            item.baseScale.y * (1 - pulse * 0.04),
+                            item.baseScale.z * (1 + pulse * 0.05)
+                        );
+                    } else {
+                        item.object.scale.lerp(item.baseScale, 0.12);
+                    }
+                });
+            });
+
+            controls3D.update();
+            renderer3D.render(scene3D, camera3D);
+            updatePinsPosition3D();
+        }
+
+        buildUI3D();
+
+        window.addEventListener('app:tabchange', (e) => {
+            if (e.detail.tabId === 'anatomi3d') {
+                requestAnimationFrame(() => {
+                    resize3D();
+                    if (!jelly3dState.isActive) {
+                        jelly3dState.isActive = true;
+                        animate3D();
+                    }
+                });
+            } else {
+                jelly3dState.isActive = false;
+            }
+        });
+    </script>
+</body>
+</html>
